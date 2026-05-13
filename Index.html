@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SolarWeek">
+<meta name="theme-color" content="#0b1020">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%230b1020'/><circle cx='90' cy='90' r='34' fill='%23ffb648'/><g stroke='%23ffb648' stroke-width='8' stroke-linecap='round'><line x1='90' y1='22' x2='90' y2='40'/><line x1='90' y1='140' x2='90' y2='158'/><line x1='22' y1='90' x2='40' y2='90'/><line x1='140' y1='90' x2='158' y2='90'/><line x1='42' y1='42' x2='55' y2='55'/><line x1='125' y1='125' x2='138' y2='138'/><line x1='138' y1='42' x2='125' y2='55'/><line x1='55' y1='125' x2='42' y2='138'/></g></svg>">
+<title>SolarWeek — 7-Day Solar Forecast</title>
+<style>
+  :root{
+    --bg:#0b1020;
+    --bg2:#141a35;
+    --card:#181f3f;
+    --card2:#1f2750;
+    --text:#f4f6ff;
+    --muted:#9aa3c7;
+    --accent:#ffb648;
+    --accent2:#ff8a3d;
+    --good:#5dd39e;
+    --warn:#ffd166;
+    --bad:#ef6f6c;
+    --shadow:0 6px 22px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(255,182,72,.18), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(255,138,61,.12), transparent 60%),
+      linear-gradient(180deg,#0b1020 0%,#0e1430 100%);
+    padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom) 16px;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:14px 0 80px}
+  header{display:flex;align-items:center;gap:10px;padding:10px 4px 16px}
+  .logo{
+    width:36px;height:36px;border-radius:10px;
+    background:radial-gradient(circle at 30% 30%,#ffd58a,#ff8a3d 70%);
+    box-shadow:0 4px 14px rgba(255,138,61,.45)
+  }
+  h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.2px}
+  .sub{color:var(--muted);font-size:12px;margin-top:2px}
+
+  .card{
+    background:linear-gradient(160deg,var(--card),var(--card2));
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:18px; padding:14px; margin-bottom:14px;
+    box-shadow:var(--shadow);
+  }
+  .row{display:flex;gap:10px;align-items:center}
+  .row > *{flex:1}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+  input,select{
+    width:100%; padding:12px 14px; border-radius:12px;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08);
+    color:var(--text); font-size:16px; outline:none;
+  }
+  input::placeholder{color:#7d86ab}
+  input:focus,select:focus{border-color:var(--accent)}
+  .btn{
+    width:100%; padding:14px; border-radius:14px; border:0;
+    background:linear-gradient(180deg,#ffb648,#ff8a3d); color:#221404;
+    font-weight:700; font-size:16px; letter-spacing:.2px;
+    box-shadow:0 8px 22px rgba(255,138,61,.35);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.secondary{
+    background:rgba(255,255,255,.08); color:var(--text);
+    box-shadow:none; border:1px solid rgba(255,255,255,.1)
+  }
+
+  .hero{
+    text-align:center; padding:18px 12px 8px;
+    background:linear-gradient(160deg,rgba(255,182,72,.18),rgba(255,138,61,.08));
+    border:1px solid rgba(255,182,72,.25);
+  }
+  .hero .place{color:var(--muted); font-size:13px; margin-bottom:6px}
+  .hero .total{font-size:44px; font-weight:800; letter-spacing:-.5px}
+  .hero .unit{font-size:14px; color:var(--muted); margin-top:-4px}
+  .hero .range{color:var(--muted);font-size:12px;margin-top:8px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .stat{
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
+    border-radius:12px; padding:10px 12px;
+  }
+  .stat .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+  .stat .v{font-size:18px;font-weight:700;margin-top:4px}
+
+  .day{
+    display:flex; align-items:center; gap:12px;
+    padding:12px; border-radius:14px;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.05);
+    margin-bottom:8px;
+  }
+  .day .dot{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:rgba(255,255,255,.06)}
+  .day .name{font-weight:600;font-size:15px}
+  .day .meta{color:var(--muted);font-size:12px;margin-top:2px}
+  .day .kwh{margin-left:auto;font-weight:700;font-size:16px}
+  .bar{height:6px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-top:6px}
+  .bar > span{display:block;height:100%;background:linear-gradient(90deg,#ffb648,#ff8a3d);border-radius:99px}
+
+  .muted{color:var(--muted);font-size:12px}
+  .err{color:var(--bad);font-size:13px;margin-top:6px;min-height:18px}
+  .hidden{display:none}
+
+  .footer{text-align:center;color:var(--muted);font-size:11px;margin-top:18px;line-height:1.5}
+  .pill{display:inline-block;padding:4px 10px;border-radius:99px;font-size:11px;background:rgba(255,255,255,.07);color:var(--muted);margin-right:6px}
+
+  /* loading shimmer */
+  .skeleton{position:relative;overflow:hidden;background:rgba(255,255,255,.04)}
+  .skeleton::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);
+    transform:translateX(-100%); animation:sh 1.2s infinite;
+  }
+  @keyframes sh{to{transform:translateX(100%)}}
+
+  .suggest{
+    position:absolute; left:14px; right:14px; z-index:5;
+    background:#1a2148; border:1px solid rgba(255,255,255,.08);
+    border-radius:12px; margin-top:4px; overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  .suggest div{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px}
+  .suggest div:last-child{border-bottom:0}
+  .suggest div:active{background:rgba(255,255,255,.06)}
+  .form-wrap{position:relative}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"></div>
+    <div>
+      <h1>SolarWeek</h1>
+      <div class="sub">7-day solar power forecast</div>
+    </div>
+  </header>
+
+  <div class="card form-wrap">
+    <div>
+      <label for="loc">Location</label>
+      <input id="loc" type="text" autocomplete="off" placeholder="City, address, or ZIP">
+      <div id="suggest" class="suggest hidden"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label for="size">System size (kW)</label>
+        <input id="size" type="number" inputmode="decimal" step="0.1" min="0" value="5" />
+      </div>
+      <div>
+        <label for="eff">System efficiency</label>
+        <select id="eff">
+          <option value="0.75">Standard (75%)</option>
+          <option value="0.80" selected>Good (80%)</option>
+          <option value="0.85">Excellent (85%)</option>
+          <option value="1.00">Raw irradiance only</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:14px" class="row">
+      <button id="useLoc" class="btn secondary" type="button">Use my location</button>
+      <button id="go" class="btn" type="button">Forecast</button>
+    </div>
+    <div id="err" class="err"></div>
+  </div>
+
+  <div id="results" class="hidden">
+    <div class="card hero">
+      <div class="place" id="placeName">—</div>
+      <div class="total" id="totalKwh">—</div>
+      <div class="unit" id="totalUnit">kWh expected this week</div>
+      <div class="range" id="range">—</div>
+      <div class="grid">
+        <div class="stat"><div class="k">Avg / day</div><div class="v" id="avgDay">—</div></div>
+        <div class="stat"><div class="k">Peak sun hours</div><div class="v" id="peakSun">—</div></div>
+        <div class="stat"><div class="k">Best day</div><div class="v" id="bestDay">—</div></div>
+        <div class="stat"><div class="k">Cloudiest</div><div class="v" id="worstDay">—</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-weight:700">Daily breakdown</div>
+        <div class="muted" id="systemLabel">—</div>
+      </div>
+      <div id="days"></div>
+    </div>
+
+    <div class="footer">
+      <span class="pill">Open-Meteo</span>
+      <span class="pill">No API key</span>
+      <span class="pill">Updates live</span>
+      <div style="margin-top:8px">Estimates assume optimally tilted panels and use shortwave radiation as the energy basis. Real output varies with tilt, shading, temperature, and inverter losses.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const err = msg => { $('err').textContent = msg || ''; };
+const fmt = n => (Math.round(n*10)/10).toLocaleString();
+const dayName = d => d.toLocaleDateString(undefined,{weekday:'short'});
+const dateLabel = d => d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+
+function weatherIcon(code, cloud){
+  // Simplified WMO mapping → emoji
+  if (code === 0) return '☀️';
+  if ([1,2].includes(code)) return cloud > 50 ? '⛅' : '🌤️';
+  if (code === 3) return '☁️';
+  if ([45,48].includes(code)) return '🌫️';
+  if ([51,53,55,56,57].includes(code)) return '🌦️';
+  if ([61,63,65,66,67,80,81,82].includes(code)) return '🌧️';
+  if ([71,73,75,77,85,86].includes(code)) return '🌨️';
+  if ([95,96,99].includes(code)) return '⛈️';
+  return '🌤️';
+}
+function weatherWord(code){
+  if (code === 0) return 'Clear';
+  if ([1,2].includes(code)) return 'Partly cloudy';
+  if (code === 3) return 'Overcast';
+  if ([45,48].includes(code)) return 'Foggy';
+  if ([51,53,55].includes(code)) return 'Drizzle';
+  if ([61,63,65,80,81,82].includes(code)) return 'Rain';
+  if ([71,73,75,85,86].includes(code)) return 'Snow';
+  if ([95,96,99].includes(code)) return 'Thunderstorm';
+  return 'Mixed';
+}
+
+/* ---------- geocoding ---------- */
+let suggestTimer=null, lastSuggestions=[];
+$('loc').addEventListener('input', e => {
+  clearTimeout(suggestTimer);
+  const q = e.target.value.trim();
+  if (q.length < 2){ $('suggest').classList.add('hidden'); return; }
+  suggestTimer = setTimeout(()=>geocode(q), 250);
+});
+$('loc').addEventListener('blur', ()=> setTimeout(()=>$('suggest').classList.add('hidden'),150));
+$('loc').addEventListener('focus', ()=> { if(lastSuggestions.length) $('suggest').classList.remove('hidden'); });
+
+async function geocode(q){
+  try{
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en&format=json`;
+    const r = await fetch(url);
+    const j = await r.json();
+    const list = j.results || [];
+    lastSuggestions = list;
+    const box = $('suggest');
+    if (!list.length){ box.classList.add('hidden'); return; }
+    box.innerHTML = list.map((p,i)=>{
+      const sub = [p.admin1,p.country].filter(Boolean).join(', ');
+      return `<div data-i="${i}">${p.name}${sub?` <span class="muted">— ${sub}</span>`:''}</div>`;
+    }).join('');
+    box.classList.remove('hidden');
+    box.querySelectorAll('div').forEach(d=>{
+      d.addEventListener('mousedown', ev=>{
+        const p = lastSuggestions[+d.dataset.i];
+        $('loc').value = `${p.name}${p.admin1?', '+p.admin1:''}${p.country?', '+p.country:''}`;
+        $('suggest').classList.add('hidden');
+        run(p.latitude, p.longitude, $('loc').value);
+      });
+    });
+  }catch(e){ /* silent */ }
+}
+
+/* ---------- main ---------- */
+$('go').addEventListener('click', async ()=>{
+  err('');
+  const q = $('loc').value.trim();
+  if(!q){ err('Enter a location first.'); return; }
+  try{
+    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`);
+    const j = await r.json();
+    if (!j.results || !j.results.length){ err('Location not found — try a city name or ZIP.'); return; }
+    const p = j.results[0];
+    const label = `${p.name}${p.admin1?', '+p.admin1:''}${p.country?', '+p.country:''}`;
+    run(p.latitude, p.longitude, label);
+  }catch(e){ err('Couldn’t reach the geocoder. Check your connection.'); }
+});
+
+$('useLoc').addEventListener('click', ()=>{
+  err('');
+  if (!navigator.geolocation){ err('Geolocation not supported on this device.'); return; }
+  $('useLoc').textContent = 'Locating…';
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const {latitude:lat, longitude:lon} = pos.coords;
+    let label = `${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+    try{
+      const r = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=en&format=json`);
+      const j = await r.json();
+      if (j.results && j.results[0]){
+        const p = j.results[0];
+        label = `${p.name}${p.admin1?', '+p.admin1:''}${p.country?', '+p.country:''}`;
+        $('loc').value = label;
+      }
+    }catch(e){}
+    $('useLoc').textContent = 'Use my location';
+    run(lat, lon, label);
+  }, e=>{
+    $('useLoc').textContent = 'Use my location';
+    err('Couldn’t get your location. Permission may be denied.');
+  }, {enableHighAccuracy:false, timeout:8000, maximumAge:300000});
+});
+
+async function run(lat, lon, label){
+  err('');
+  $('results').classList.remove('hidden');
+  $('placeName').textContent = label;
+  $('totalKwh').textContent = '…';
+  $('range').textContent = 'Loading forecast…';
+  $('days').innerHTML = '';
+  for (let i=0;i<7;i++){
+    const sk = document.createElement('div');
+    sk.className='day skeleton'; sk.style.height='62px';
+    $('days').appendChild(sk);
+  }
+
+  try{
+    // shortwave_radiation_sum is in MJ/m² per day (Open-Meteo docs)
+    // 1 kWh/m² = 3.6 MJ/m²  →  peak sun hours = MJ/m² / 3.6
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`+
+                `&daily=shortwave_radiation_sum,sunshine_duration,temperature_2m_max,temperature_2m_min,precipitation_sum,cloud_cover_mean,weather_code,sunrise,sunset`+
+                `&timezone=auto&forecast_days=7`;
+    const r = await fetch(url);
+    const j = await r.json();
+    if (!j.daily){ throw new Error('No forecast data'); }
+    renderForecast(j, label);
+  }catch(e){
+    err('Couldn’t load the forecast. Try again in a moment.');
+    $('results').classList.add('hidden');
+  }
+}
+
+function renderForecast(data, label){
+  const d = data.daily;
+  const size = Math.max(0, parseFloat($('size').value)||0);
+  const eff  = parseFloat($('eff').value)||0.8;
+  const rawOnly = eff === 1.0;
+
+  const days = d.time.map((t,i)=>({
+    date: new Date(t+'T12:00:00'),
+    radMJ: d.shortwave_radiation_sum[i] ?? 0,             // MJ/m² per day
+    sunSec: d.sunshine_duration?.[i] ?? 0,
+    tmax: d.temperature_2m_max?.[i],
+    tmin: d.temperature_2m_min?.[i],
+    precip: d.precipitation_sum?.[i] ?? 0,
+    cloud: d.cloud_cover_mean?.[i] ?? 0,
+    code: d.weather_code?.[i] ?? 0,
+  }));
+
+  // peak sun hours per day = kWh/m² per day = MJ / 3.6
+  days.forEach(x=>{
+    x.psh = x.radMJ / 3.6;                     // kWh per m² per day
+    x.kwh = rawOnly ? x.psh : x.psh * size * eff;
+  });
+
+  const total = days.reduce((s,x)=>s+x.kwh,0);
+  const avg   = total/7;
+  const pshTotal = days.reduce((s,x)=>s+x.psh,0);
+  const best  = days.reduce((b,x)=> x.kwh>b.kwh?x:b, days[0]);
+  const worst = days.reduce((b,x)=> x.cloud>b.cloud?x:b, days[0]);
+  const max   = Math.max(...days.map(x=>x.kwh)) || 1;
+
+  if (rawOnly){
+    $('totalKwh').textContent = fmt(pshTotal);
+    $('totalUnit').textContent = 'kWh / m² of sunlight this week';
+    $('systemLabel').textContent = 'Per m² of horizontal surface';
+  } else {
+    $('totalKwh').textContent = fmt(total);
+    $('totalUnit').textContent = 'kWh expected this week';
+    $('systemLabel').textContent = `${size} kW system · ${Math.round(eff*100)}% efficiency`;
+  }
+
+  const first = days[0].date, last = days[6].date;
+  $('range').textContent = `${dateLabel(first)} – ${dateLabel(last)}`;
+  $('avgDay').textContent = rawOnly ? `${fmt(pshTotal/7)} kWh/m²` : `${fmt(avg)} kWh`;
+  $('peakSun').textContent = `${fmt(pshTotal/7)} hrs`;
+  $('bestDay').textContent = `${dayName(best.date)} · ${fmt(rawOnly?best.psh:best.kwh)} ${rawOnly?'kWh/m²':'kWh'}`;
+  $('worstDay').textContent = `${dayName(worst.date)} · ${Math.round(worst.cloud)}% cloud`;
+
+  $('days').innerHTML = days.map(x=>{
+    const w = Math.round((x.kwh/max)*100);
+    const value = rawOnly ? `${fmt(x.psh)} kWh/m²` : `${fmt(x.kwh)} kWh`;
+    return `
+      <div class="day">
+        <div class="dot">${weatherIcon(x.code, x.cloud)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="name">${dayName(x.date)} <span class="muted" style="font-weight:400">· ${dateLabel(x.date)}</span></div>
+          <div class="meta">${weatherWord(x.code)} · ${Math.round(x.cloud)}% cloud · ${fmt(x.psh)} sun hrs${x.tmax!=null?` · ${Math.round(x.tmax)}°`:''}</div>
+          <div class="bar"><span style="width:${w}%"></span></div>
+        </div>
+        <div class="kwh">${value}</div>
+      </div>`;
+  }).join('');
+}
+
+/* Enter key submits */
+$('loc').addEventListener('keydown', e=>{ if(e.key==='Enter'){ $('suggest').classList.add('hidden'); $('go').click(); }});
+</script>
+</body>
+</html>
